@@ -2,9 +2,10 @@
 
    
  import processing.sound.*;
- //import KinectPV2.*;
+ import KinectPV2.*;
+ import KinectPV2.KJoint;
  
- //KinectPV2 kinect;
+ KinectPV2 kinect;
 
  SoundFile file1;
  SoundFile file2;
@@ -30,8 +31,9 @@
 void setup() {   
 
  size(1270, 720);
- //kinect = new KinectPV2(this);
- //kinect.init();
+ kinect = new KinectPV2(this);
+ kinect.enableSkeleton3DMap(true);
+ kinect.init();
  
  file1 = new SoundFile(this,"");
 
@@ -44,8 +46,9 @@ void setup() {
  file7 = new SoundFile(this,"G_H_no_01.mp3"); 
 }  
 
-void draw() {   
- background(0);
+void draw() {  
+   captureKinect();
+   background(0);
    bar1Timeout = drawBox(bar1Timeout,220,220,220,1);
    bar2Timeout = drawBox(bar2Timeout,255,255,0,2);
    bar3Timeout = drawBox(bar3Timeout,0,255,255,3);
@@ -54,6 +57,11 @@ void draw() {
    bar6Timeout = drawBox(bar6Timeout,255,0,0,6);
    bar7Timeout = drawBox(bar7Timeout,0,0,255,7);
 } 
+
+void captureKinect() {
+   ArrayList<KSkeleton> skeletonArray =  kinect.getSkeleton3d(); 
+   println(skeletonArray.size());
+}
 
 void keyPressed() {
  if (key == '1') {
