@@ -47,7 +47,6 @@ void instantiateAudio() {
   String audioName;
   for (int i=0;i<numBars;i++) {
     audioName = noteStrings[i]+"_H_no_01.mp3"; 
-    println(audioName);
     audioFiles[i]= new SoundFile(this,audioName); 
   }
 }
@@ -56,7 +55,6 @@ void instantiateVideo() {
    String movieName;
    for (int i=0;i<numBars;i++) {
     movieName = (i+1)+".mp4"; 
-    println(movieName);
     barMovies[i]= new Movie(this,movieName);
     barMovies[i].loop();
     barMovies[i].play();
@@ -83,10 +81,34 @@ void captureKinect() {
 }
 
 void movementConditions(KJoint[] joints) {
-   if ((joints[KinectPV2.JointType_HandRight].getY() > joints[KinectPV2.JointType_Head].getY()) && (movementTriggers[0] == 0)) kinectTriggered(0);
+  //right hand above head 
+   if ((joints[KinectPV2.JointType_HandRight].getY() > (joints[KinectPV2.JointType_Head].getY()+0.3)) && (movementTriggers[0] == 0)) kinectTriggered(0);
    if (joints[KinectPV2.JointType_HandRight].getY() < joints[KinectPV2.JointType_Head].getY()) kinectReset(0);
-   if ((joints[KinectPV2.JointType_HandLeft].getY() > joints[KinectPV2.JointType_Head].getY()) && (movementTriggers[1] == 0)) kinectTriggered(1);
+   //left hand above head 
+   if ((joints[KinectPV2.JointType_HandLeft].getY() > (joints[KinectPV2.JointType_Head].getY()+0.3)) && (movementTriggers[1] == 0)) kinectTriggered(1);
    if (joints[KinectPV2.JointType_HandLeft].getY() < joints[KinectPV2.JointType_Head].getY()) kinectReset(1);
+   //left curl 
+   if (( computeDistance(joints[KinectPV2.JointType_HandLeft].getX(),joints[KinectPV2.JointType_HandLeft].getY(),joints[KinectPV2.JointType_HandLeft].getZ(),
+     joints[KinectPV2.JointType_ShoulderLeft].getX(), joints[KinectPV2.JointType_ShoulderLeft].getY(), joints[KinectPV2.JointType_ShoulderLeft].getZ()) < 0.13) && (movementTriggers[2] == 0)) kinectTriggered(2);
+    if ( computeDistance(joints[KinectPV2.JointType_HandLeft].getX(),joints[KinectPV2.JointType_HandLeft].getY(),joints[KinectPV2.JointType_HandLeft].getZ(),
+     joints[KinectPV2.JointType_ShoulderLeft].getX(), joints[KinectPV2.JointType_ShoulderLeft].getY(), joints[KinectPV2.JointType_ShoulderLeft].getZ()) > 0.29) kinectReset(2);
+    //right curl
+   if (( computeDistance(joints[KinectPV2.JointType_HandRight].getX(),joints[KinectPV2.JointType_HandRight].getY(),joints[KinectPV2.JointType_HandRight].getZ(),
+     joints[KinectPV2.JointType_ShoulderRight].getX(), joints[KinectPV2.JointType_ShoulderRight].getY(), joints[KinectPV2.JointType_ShoulderRight].getZ()) < 0.13) && (movementTriggers[3] == 0)) kinectTriggered(3);
+   if ( computeDistance(joints[KinectPV2.JointType_HandRight].getX(),joints[KinectPV2.JointType_HandRight].getY(),joints[KinectPV2.JointType_HandRight].getZ(),
+     joints[KinectPV2.JointType_ShoulderRight].getX(), joints[KinectPV2.JointType_ShoulderRight].getY(), joints[KinectPV2.JointType_ShoulderRight].getZ()) > 0.29) kinectReset(3);  
+    //left arm extension
+    if ((Math.abs(joints[KinectPV2.JointType_HandLeft].getY() - joints[KinectPV2.JointType_ShoulderLeft].getY()) < 0.2) && (Math.abs(joints[KinectPV2.JointType_HandLeft].getX()- joints[KinectPV2.JointType_ShoulderLeft].getX()) > 0.3) && (movementTriggers[4] == 0)) kinectTriggered(4);
+    if ((joints[KinectPV2.JointType_ShoulderLeft].getY() - joints[KinectPV2.JointType_HandLeft].getY()) > 0.4) kinectReset(4);
+    //right arm extension
+    if ((Math.abs(joints[KinectPV2.JointType_HandRight].getY() - joints[KinectPV2.JointType_ShoulderRight].getY()) < 0.2) && (Math.abs(joints[KinectPV2.JointType_HandRight].getX()- joints[KinectPV2.JointType_ShoulderRight].getX()) > 0.3) && (movementTriggers[5] == 0)) kinectTriggered(5);
+    if ((joints[KinectPV2.JointType_ShoulderRight].getY() - joints[KinectPV2.JointType_HandRight].getY()) > 0.4) kinectReset(5);
+     
+}
+
+double computeDistance(float x1,float y1,float z1,float x2,float y2,float z2) {
+  double d = Math.sqrt(Math.pow((x2-x1),2)+Math.pow((y2-y1),2)+Math.pow((z2-z1),2));
+  return d;
 }
 
 void kinectReset(int t) {
