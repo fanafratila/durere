@@ -2,61 +2,73 @@
 
    
  import processing.sound.*;
+ import processing.video.*;
  import KinectPV2.*;
  import KinectPV2.KJoint;
  
- KinectPV2 kinect;
 
- SoundFile audioFile1;
- SoundFile audioFile2;
- SoundFile audioFile3;
- SoundFile audioFile4;
- SoundFile audioFile5;
- SoundFile audioFile6;
- SoundFile audioFile7;
+ int numBars = 7;
  int[] barTimeouts;
  int[] movementTriggers;
  int trackingSkeleton = 0;
- int timerFrames = 90;
- int fadeInFrames = 10;
- int fadeOutFrames = 20;
- int barWidth = 183;
+ int timerFrames = 170;
+ int fadeInFrames = 20;
+ int fadeOutFrames = 30;
+ int barWidth = 274;
+ String[] noteStrings = {"Ab", "Bb", "C", "Db", "Eb","F","G"};
+ KinectPV2 kinect;
+ SoundFile[] audioFiles = new SoundFile[numBars];
+ Movie[] barMovies = new Movie[numBars];
+
 
 void setup() {   
 
- size(1270, 720);
+ size(1920,1080);
  kinect = new KinectPV2(this);
  kinect.enableSkeleton3DMap(true);
  kinect.init();
  
- barTimeouts = new int[7];
+ barTimeouts = new int[numBars];
  for (int i=0;i<barTimeouts.length;i++) {
    barTimeouts[i]=0; 
  }
  
- movementTriggers = new int[7];
+ movementTriggers = new int[numBars];
  for (int i=0;i<barTimeouts.length;i++) {
    movementTriggers[i]=0; 
  }
- audioFile1 = new SoundFile(this,"Ab_H_no_01.mp3");
- audioFile2 = new SoundFile(this,"Bb_H_no_01.mp3");
- audioFile3 = new SoundFile(this,"C_H_no_01.mp3");
- audioFile4 = new SoundFile(this,"Db_H_no_01.mp3");
- audioFile5=  new SoundFile(this,"Eb_H_no_01.mp3");
- audioFile6 = new SoundFile(this,"F_H_no_01.mp3");
- audioFile7 = new SoundFile(this,"G_H_no_01.mp3");
-}  
+ 
+ instantiateAudio();
+ instantiateVideo();
+
+} 
+
+void instantiateAudio() {
+  String audioName;
+  for (int i=0;i<numBars;i++) {
+    audioName = noteStrings[i]+"_H_no_01.mp3"; 
+    println(audioName);
+    audioFiles[i]= new SoundFile(this,audioName); 
+  }
+}
+
+void instantiateVideo() {
+   String movieName;
+   for (int i=0;i<numBars;i++) {
+    movieName = (i+1)+".mp4"; 
+    println(movieName);
+    barMovies[i]= new Movie(this,movieName);
+    barMovies[i].loop();
+    barMovies[i].play();
+  }
+}
 
 void draw() {  
    captureKinect();
    background(0);
-   barTimeouts[0] = drawBox(barTimeouts[0],220,220,220,1);
-   barTimeouts[1] = drawBox(barTimeouts[1],255,255,0,2);
-   barTimeouts[2] = drawBox(barTimeouts[2],0,255,255,3);
-   barTimeouts[3] = drawBox(barTimeouts[3],0,255,0,4);
-   barTimeouts[4] = drawBox(barTimeouts[4],255,0,255,5);
-   barTimeouts[5] = drawBox(barTimeouts[5],255,0,0,6);
-   barTimeouts[6] = drawBox(barTimeouts[6],0,0,255,7);
+   for (int i=0;i<numBars;i++) {
+     barTimeouts[i] = drawBox(barTimeouts[i],i);
+   }
 } 
 
 void captureKinect() {
@@ -82,41 +94,33 @@ void kinectReset(int t) {
 }
 
 void kinectTriggered(int t) {
-  int k = t+1;
-  if (k == 1) {
-    resetTimeout(0);
-    audioFile1.play();
-    movementTriggers[t]=2; 
-  }
-  if (k == 2) {
-    resetTimeout(1);
-    audioFile2.play();
-    movementTriggers[t]=2; 
-  }
+  resetTimeout(t);
+  audioFiles[t].play();
+  movementTriggers[t]=2; 
 }
 
 void keyPressed() {
  if (key == '1') {
     resetTimeout(0);
-    audioFile1.play();
+    audioFiles[0].play();
   } else if (key == '2') {
     resetTimeout(1);
-    audioFile2.play();
+    audioFiles[1].play();
   } else if (key == '3') {
     resetTimeout(2);
-    audioFile3.play();
+    audioFiles[2].play();
   } else if (key == '4') {
     resetTimeout(3);
-    audioFile4.play();
+    audioFiles[3].play();
   } else if (key == '5') {
     resetTimeout(4);
-    audioFile5.play();
+     audioFiles[4].play();
   } else if (key == '6') {
     resetTimeout(5);
-    audioFile6.play();
+    audioFiles[5].play();
   } else if (key == '7') {
      resetTimeout(6);
-     audioFile7.play();
+     audioFiles[6].play();
   }
 }
 
@@ -124,15 +128,20 @@ void resetTimeout(int i) {
    barTimeouts[i]=1; 
 }
 
-int drawBox(int t, int r, int g, int b, int pos) {
-   if ((t > 0) && (t < timerFrames)) {
+void movieEvent(Movie m) {
+   m.read(); 
+}
+
+int drawBox(int t, int pos) {
+  if ((t > 0) && (t < timerFrames)) {
      float a = 256;
      if (t < fadeInFrames) a = float(t) / float(fadeInFrames) * 256.0;
      if (t > (timerFrames - fadeOutFrames)) a = float(fadeOutFrames - (t + (fadeOutFrames-timerFrames))) / float(fadeOutFrames) * 256.0;
-     fill(r,g,b,a);
-     rect((barWidth * (pos-1)),0,barWidth,720);
+     tint(255,a);
+     image(barMovies[pos],barWidth*pos,0);
      t++; 
      if (t == timerFrames) t = 0;
    }
+   
    return t;
 }
